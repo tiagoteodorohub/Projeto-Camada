@@ -1,7 +1,7 @@
 import userRepository from "../repositories/userRepository.js";
 
 const userService = {
-    recuperarUsuario: async () => {
+    recuperarUsuarios: async () => {
         const resultado = await userRepository.selecionar();
         return resultado;
     },
@@ -30,6 +30,10 @@ const userService = {
         return resultado;
     },
 
+    deletarUsuario: async (userId) => {
+        const resultado = await userRepository.deletar(userId);
+        return resultado;
+    }
 };
 
 export default userService;
