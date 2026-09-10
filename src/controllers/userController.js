@@ -39,6 +39,48 @@ const userController = {
                 data: error.message
             });
         }
+    },
+
+    deletar: async (req, res) => {
+        try {
+            const {id} = req.params;
+            const resultado = await userService.deletarUsuario(id);
+
+            res.status(200).json({
+                message: "Usuário deletado com sucesso!",
+                data: resultado
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: "Erro ao deletar usuários!",
+                data: error.message
+            });
+        }
+       
+    },
+    atualizar: async (req, res) => {
+        try {
+            const {id} = req.params
+            const {name, email, password} = req.body
+            const user = new User(name, email, password, id);
+            const resultado = await userService.atualizarUsuario(user);
+                
+            res.status(200).json({
+                message: "Usuário atualizado com sucesso!",
+                data: resultado
+            });
+        } catch (error) {
+            console.error(error);
+            
+            res.status(500).json({
+                message: "Erro ao atualizar o usuários!",
+                data: error.message
+            });
+        } 
+
+        
+
+
     }
 };
 

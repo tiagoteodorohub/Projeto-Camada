@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro de Usuários — Projeto Camadas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #16233B;
+    --ink-soft: #1F3050;
+    --ink-softer: #2B4269;
+    --paper: #E7ECF2;
+    --panel: #FFFFFF;
+    --line: #CBD5E1;
+    --text: #16233B;
+    --text-muted: #55647A;
+    --text-on-ink: #E9EEF5;
+    --text-on-ink-muted: #9DAEC7;
+    --amber: #D98B2E;
+    --amber-deep: #B96F1B;
+    --success: #2F8F5B;
+    --success-bg: #E4F3EA;
+    --danger: #C0443A;
+    --danger-bg: #FBEAE8;
+    --radius: 3px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 500; margin: 0; }
+
+  .app { max-width: 1200px; margin: 0 auto; padding: 0 28px 60px; }
+
+  /* ---------- HEADER / STRATA ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 40px;
+    align-items: center;
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-text h1 { font-size: 34px; color: var(--ink); letter-spacing: -0.01em; }
+  .hero-text p { max-width: 46ch; color: var(--text-muted); margin-top: 10px; font-size: 15px; }
+  .hero-text .path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--amber-deep);
+    margin-top: 16px;
+  }
+
+  .strata {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .stratum {
+    position: relative;
+    padding: 9px 12px;
+    font-size: 11.5px;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 500;
+    color: var(--text-on-ink-muted);
+    background: var(--ink);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .stratum:first-child { border-top: none; }
+  .stratum.active {
+    background: var(--amber);
+    color: #241505;
+  }
+  .stratum .dot {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+  }
+  .stratum.active .dot { opacity: 0.7; }
+
+  /* ---------- LAYOUT ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 0;
+    margin-top: 0;
+    border: 1px solid var(--line);
+    border-top: none;
+  }
+
+  /* ---------- FORM PANEL ---------- */
+  .form-panel {
+    background: var(--ink-soft);
+    color: var(--text-on-ink);
+    padding: 28px 26px 30px;
+    border-right: 1px solid var(--line);
+  }
+  .form-panel h2 { color: #fff; font-size: 20px; margin-bottom: 4px; }
+  .form-panel .form-sub { color: var(--text-on-ink-muted); font-size: 13px; margin-bottom: 22px; }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-on-ink-muted);
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 9px 10px;
+    background: var(--ink-softer);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+  }
+  .field input::placeholder { color: #6E82A3; }
+  .field input:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 1px var(--amber);
+  }
+  .field .hint {
+    font-size: 11.5px;
+    color: var(--text-on-ink-muted);
+    margin-top: 5px;
+  }
+  .field .error {
+    font-size: 11.5px;
+    color: #FF9E8F;
+    margin-top: 5px;
+    display: none;
+  }
+  .field.invalid input { border-color: #E5695B; }
+  .field.invalid .error { display: block; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 22px; }
+  button {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  button:hover { filter: brightness(1.08); }
+  button:active { filter: brightness(0.95); }
+  .btn-primary { background: var(--amber); color: #241505; flex: 1; }
+  .btn-ghost { background: transparent; border-color: rgba(255,255,255,0.2); color: var(--text-on-ink); }
+  .btn-small { padding: 6px 10px; font-size: 12.5px; }
+
+  .conn-box {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px dashed rgba(255,255,255,0.15);
+  }
+  .conn-box summary {
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text-on-ink-muted);
+    font-weight: 500;
+  }
+  .conn-box[open] summary { color: #fff; margin-bottom: 12px; }
+  .conn-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--text-on-ink-muted);
+    margin-top: 10px;
+  }
+  .conn-status .led { width: 7px; height: 7px; border-radius: 50%; background: #6E82A3; }
+  .conn-status.ok .led { background: var(--success); }
+  .conn-status.fail .led { background: var(--danger); }
+
+  /* ---------- TABLE PANEL ---------- */
+  .table-panel { background: var(--panel); padding: 28px 26px 30px; }
+  .table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .table-toolbar h2 { font-size: 20px; color: var(--ink); }
+  .table-toolbar .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 8px;
+  }
+  .toolbar-right { display: flex; gap: 8px; align-items: center; }
+  .search-box {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13.5px;
+    width: 200px;
+  }
+  .search-box:focus { outline: none; border-color: var(--ink-softer); }
+  .btn-outline {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #EEF1F5;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: #F6F8FA; }
+  td.id, td.email { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text-muted); }
+  td.pass { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #B7C0CC; letter-spacing: 2px; }
+  td.name { font-weight: 500; }
+  .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-muted);
+    padding: 6px 10px;
+    font-size: 12.5px;
+  }
+  .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .icon-btn.edit:hover { border-color: var(--amber-deep); color: var(--amber-deep); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state h3 { color: var(--ink); font-size: 18px; margin-bottom: 8px; }
+  .empty-state p { font-size: 13.5px; max-width: 40ch; margin: 0 auto; }
+
+  .confirm-row {
+    background: var(--danger-bg) !important;
+  }
+  .confirm-row td { color: var(--danger); }
+  .confirm-row .row-actions button { font-size: 12px; }
+
+  /* ---------- TOAST ---------- */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+  }
+  .toast {
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    border-left: 3px solid var(--amber);
+    box-shadow: 0 6px 18px rgba(22,35,59,0.25);
+    max-width: 320px;
+  }
+  .toast.success { border-left-color: var(--success); }
+  .toast.error { border-left-color: var(--danger); }
+
+  footer {
+    margin-top: 24px;
+    padding-top: 18px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    display: flex;
+    justify-content: space-between;
+  }
+  footer span.mono { font-family: 'JetBrains Mono', monospace; color: var(--ink-softer); }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .strata { flex-direction: row; }
+    .layout { grid-template-columns: 1fr; }
+    .form-panel { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stratum { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hero">
+    <div class="hero-text">
+      <h1>Cadastro de Usuários</h1>
+      <p>Painel de operação para a API em camadas: cada ação aqui percorre Rota, Controller, Service, Repository e o banco MySQL — na ordem exata em que o projeto foi construído.</p>
+      <div class="path">Projeto Camadas · /users</div>
+    </div>
+    <div class="strata" id="strata">
+      <div class="stratum" data-layer="route">Rota<span class="dot"></span></div>
+      <div class="stratum" data-layer="controller">Controller<span class="dot"></span></div>
+      <div class="stratum" data-layer="service">Service<span class="dot"></span></div>
+      <div class="stratum" data-layer="repository">Repository<span class="dot"></span></div>
+      <div class="stratum" data-layer="database">MySQL<span class="dot"></span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="form-panel">
+      <h2 id="formTitle">Novo usuário</h2>
+      <p class="form-sub" id="formSub">Preencha os dados para criar um registro.</p>
+
+      <form id="userForm" novalidate>
+        <input type="hidden" id="userId" value="">
+
+        <div class="field" id="fieldName">
+          <label for="name">Nome</label>
+          <input type="text" id="name" maxlength="50" placeholder="Ex.: Ana Ferreira" autocomplete="off">
+          <div class="error">Informe um nome com até 50 caracteres.</div>
+        </div>
+
+        <div class="field" id="fieldEmail">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" maxlength="75" placeholder="ana@empresa.com" autocomplete="off">
+          <div class="error">Informe um e-mail válido.</div>
+        </div>
+
+        <div class="field" id="fieldPassword">
+          <label for="password">Senha</label>
+          <input type="password" id="password" maxlength="1000" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+          <div class="hint" id="passwordHint">Armazenada como está — sem hash. Ideal para depois de terminar o CRUD, aplicar bcrypt.</div>
+          <div class="error">Informe uma senha com pelo menos 6 caracteres.</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="submitBtn">Salvar usuário</button>
+          <button type="button" class="btn-ghost" id="cancelBtn" style="display:none;">Cancelar</button>
+        </div>
+      </form>
+
+      <details class="conn-box" id="connBox" open>
+        <summary>Conexão com a API</summary>
+        <div class="field" style="margin-bottom:10px;">
+          <label for="apiBase">URL base</label>
+          <input type="text" id="apiBase" placeholder="http://localhost:3000">
+        </div>
+        <button type="button" class="btn-ghost btn-small" id="testConnBtn">Testar conexão</button>
+        <div class="conn-status" id="connStatus"><span class="led"></span><span id="connStatusText">ainda não testada</span></div>
+      </details>
+    </aside>
+
+    <section class="table-panel">
+      <div class="table-toolbar">
+        <div>
+          <h2 style="display:inline;">Usuários</h2><span class="count" id="userCount">0 registros</span>
+        </div>
+        <div class="toolbar-right">
+          <input type="text" class="search-box" id="searchBox" placeholder="Buscar por nome ou e-mail">
+          <button class="btn-outline btn-small" id="refreshBtn">Atualizar</button>
+        </div>
+      </div>
+
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th style="width:56px;">ID</th>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th style="width:110px;">Senha</th>
+            <th style="width:130px;"></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <h3>Nenhum usuário ainda</h3>
+        <p>Configure a URL da API ao lado e crie o primeiro registro pelo formulário.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <span>Rota → Controller → Service → Repository → MySQL</span>
+    <span class="mono">GET · POST · PUT · DELETE /users</span>
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  const state = { users: [], editingId: null, filter: '' };
+
+  const el = (id) => document.getElementById(id);
+  const form = el('userForm');
+  const nameInput = el('name');
+  const emailInput = el('email');
+  const passwordInput = el('password');
+  const passwordHint = el('passwordHint');
+  const submitBtn = el('submitBtn');
+  const cancelBtn = el('cancelBtn');
+  const formTitle = el('formTitle');
+  const formSub = el('formSub');
+  const tableBody = el('tableBody');
+  const emptyState = el('emptyState');
+  const userCount = el('userCount');
+  const searchBox = el('searchBox');
+  const apiBaseInput = el('apiBase');
+  const connStatus = el('connStatus');
+  const connStatusText = el('connStatusText');
+
+  function getApiBase() {
+    const v = apiBaseInput.value.trim();
+    return v.replace(/\/+$/, '') || 'http://localhost:3000';
+  }
+
+  // ---------- STRATA ANIMATION ----------
+  const layerOrder = ['route', 'controller', 'service', 'repository', 'database'];
+  function pulseStrata(minStepMs) {
+    return new Promise((resolve) => {
+      let i = 0;
+      const strataEls = layerOrder.map(name => document.querySelector(`.stratum[data-layer="${name}"]`));
+      const step = () => {
+        strataEls.forEach(s => s.classList.remove('active'));
+        if (i < strataEls.length) {
+          strataEls[i].classList.add('active');
+          i++;
+          setTimeout(step, minStepMs);
+        } else {
+          setTimeout(() => { strataEls.forEach(s => s.classList.remove('active')); resolve(); }, minStepMs);
+        }
+      };
+      step();
+    });
+  }
+
+  // ---------- TOAST ----------
+  function toast(message, type) {
+    const box = el('toast');
+    const t = document.createElement('div');
+    t.className = 'toast' + (type ? ' ' + type : '');
+    t.textContent = message;
+    box.appendChild(t);
+    setTimeout(() => t.remove(), 4200);
+  }
+
+  // ---------- VALIDATION ----------
+  function setInvalid(fieldId, invalid) {
+    el(fieldId).classList.toggle('invalid', invalid);
+  }
+
+  function validate(isEdit) {
+    let valid = true;
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    const nameOk = name.length > 0 && name.length <= 50;
+    setInvalid('fieldName', !nameOk);
+    if (!nameOk) valid = false;
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 75;
+    setInvalid('fieldEmail', !emailOk);
+    if (!emailOk) valid = false;
+
+    const passOk = password.length >= 6 && password.length <= 1000;
+    setInvalid('fieldPassword', !passOk);
+    if (!passOk) valid = false;
+
+    return valid;
+  }
+
+  [nameInput, emailInput, passwordInput].forEach(input => {
+    input.addEventListener('input', () => {
+      const fieldMap = { name: 'fieldName', email: 'fieldEmail', password: 'fieldPassword' };
+      el(fieldMap[input.id]).classList.remove('invalid');
+    });
+  });
+
+  // ---------- FORM MODE ----------
+  function enterEditMode(user) {
+    state.editingId = user.id;
+    el('userId').value = user.id;
+    nameInput.value = user.name;
+    emailInput.value = user.email;
+    passwordInput.value = '';
+    formTitle.textContent = 'Editar usuário #' + user.id;
+    formSub.textContent = 'A API exige a senha completa a cada atualização — reinforme-a abaixo.';
+    passwordHint.textContent = 'Obrigatório reenviar: o endpoint de atualização substitui a senha inteira.';
+    submitBtn.textContent = 'Atualizar usuário';
+    cancelBtn.style.display = 'inline-block';
+    nameInput.focus();
+  }
+
+  function exitEditMode() {
+    state.editingId = null;
+    form.reset();
+    ['fieldName', 'fieldEmail', 'fieldPassword'].forEach(f => el(f).classList.remove('invalid'));
+    formTitle.textContent = 'Novo usuário';
+    formSub.textContent = 'Preencha os dados para criar um registro.';
+    passwordHint.textContent = 'Armazenada como está — sem hash. Ideal para, depois de terminar o CRUD, aplicar bcrypt.';
+    submitBtn.textContent = 'Salvar usuário';
+    cancelBtn.style.display = 'none';
+  }
+
+  cancelBtn.addEventListener('click', exitEditMode);
+
+  // ---------- RENDER ----------
+  function maskPassword() { return '•'.repeat(8); }
+
+  function render() {
+    const term = state.filter.toLowerCase();
+    const filtered = state.users.filter(u =>
+      u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+    );
+
+    userCount.textContent = state.users.length + (state.users.length === 1 ? ' registro' : ' registros');
+
+    if (filtered.length === 0) {
+      tableBody.innerHTML = '';
+      emptyState.style.display = 'block';
+      emptyState.querySelector('h3').textContent = state.users.length === 0 ? 'Nenhum usuário ainda' : 'Nada encontrado';
+      emptyState.querySelector('p').textContent = state.users.length === 0
+        ? 'Configure a URL da API ao lado e crie o primeiro registro pelo formulário.'
+        : 'Ajuste o termo de busca para encontrar o usuário.';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    tableBody.innerHTML = filtered.map(u => `
+      <tr data-id="${u.id}">
+        <td class="id">#${u.id}</td>
+        <td class="name">${escapeHtml(u.name)}</td>
+        <td class="email">${escapeHtml(u.email)}</td>
+        <td class="pass">${maskPassword()}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn edit" data-action="edit" data-id="${u.id}">Editar</button>
+            <button class="icon-btn danger" data-action="delete" data-id="${u.id}">Excluir</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[s]));
+  }
+
+  // ---------- API ----------
+  async function apiRequest(method, path, body) {
+    const res = await fetch(getApiBase() + path, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    let payload = null;
+    try { payload = await res.json(); } catch (e) { /* sem corpo */ }
+    if (!res.ok) {
+      throw new Error((payload && payload.data) || (payload && payload.message) || ('Erro HTTP ' + res.status));
+    }
+    return payload;
+  }
+
+  async function loadUsers() {
+    try {
+      const payload = await apiRequest('GET', '/users');
+      state.users = (payload && payload.data) || [];
+      render();
+    } catch (err) {
+      toast('Não foi possível carregar os usuários: ' + err.message, 'error');
+    }
+  }
+
+  async function testConnection() {
+    connStatus.className = 'conn-status';
+    connStatusText.textContent = 'testando...';
+    try {
+      await apiRequest('GET', '/users');
+      connStatus.className = 'conn-status ok';
+      connStatusText.textContent = 'conectado';
+    } catch (err) {
+      connStatus.className = 'conn-status fail';
+      connStatusText.textContent = 'falhou — verifique porta e CORS';
+    }
+  }
+
+  el('testConnBtn').addEventListener('click', testConnection);
+  el('refreshBtn').addEventListener('click', () => { pulseStrata(70); loadUsers(); });
+  searchBox.addEventListener('input', (e) => { state.filter = e.target.value; render(); });
+
+  tableBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const user = state.users.find(u => String(u.id) === String(id));
+    if (btn.dataset.action === 'edit') {
+      enterEditMode(user);
+    } else if (btn.dataset.action === 'delete') {
+      askDeleteConfirmation(user, btn.closest('tr'));
+    }
+  });
+
+  function askDeleteConfirmation(user, rowEl) {
+    if (rowEl.classList.contains('confirm-row')) return;
+    rowEl.classList.add('confirm-row');
+    const actionsCell = rowEl.querySelector('.row-actions');
+    const original = actionsCell.innerHTML;
+    actionsCell.innerHTML = `
+      <span style="font-size:12.5px; margin-right:6px;">Excluir #${user.id}?</span>
+      <button class="icon-btn btn-small" data-confirm="no">Não</button>
+      <button class="icon-btn danger btn-small" data-confirm="yes">Sim, excluir</button>
+    `;
+    actionsCell.querySelector('[data-confirm="no"]').addEventListener('click', () => {
+      rowEl.classList.remove('confirm-row');
+      actionsCell.innerHTML = original;
+    });
+    actionsCell.querySelector('[data-confirm="yes"]').addEventListener('click', async () => {
+      await pulseStrata(90);
+      try {
+        await apiRequest('DELETE', '/users/' + user.id);
+        toast('Usuário #' + user.id + ' excluído.', 'success');
+        if (state.editingId === user.id) exitEditMode();
+        await loadUsers();
+      } catch (err) {
+        toast('Erro ao excluir: ' + err.message, 'error');
+        rowEl.classList.remove('confirm-row');
+        actionsCell.innerHTML = original;
+      }
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const isEdit = !!state.editingId;
+    if (!validate(isEdit)) {
+      toast('Revise os campos destacados antes de salvar.', 'error');
+      return;
+    }
+    const body = {
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      password: passwordInput.value
+    };
+    submitBtn.disabled = true;
+    const pulseDone = pulseStrata(90);
+    try {
+      if (isEdit) {
+        await apiRequest('PUT', '/users/' + state.editingId, body);
+        await pulseDone;
+        toast('Usuário #' + state.editingId + ' atualizado.', 'success');
+        exitEditMode();
+      } else {
+        await apiRequest('POST', '/users', body);
+        await pulseDone;
+        toast('Usuário criado com sucesso.', 'success');
+        form.reset();
+      }
+      await loadUsers();
+    } catch (err) {
+      await pulseDone;
+      toast('Erro ao salvar: ' + err.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ---------- INIT ----------
+  apiBaseInput.value = 'http://localhost:3000';
+  loadUsers();
+})();
+</script>
+</body>
+</html>
